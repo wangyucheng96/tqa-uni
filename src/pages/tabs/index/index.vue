@@ -106,7 +106,16 @@
 					"product": "all",
 					"show": true,
 					"checked": true
-				}],
+				},
+				{
+					"title": "任务列表",
+					"icon": "/static/icons/row1-2.png",
+					"url": "/pages/taskList/tasklist",
+					"product": "all",
+					"show": true,
+					"checked": true
+				}
+				],
 				alertNum: 0
 			};
 		},
@@ -307,7 +316,6 @@
 			background-color: #fff;
 			/*  #ifdef  APP-PLUS  */
 			top: var(--status-bar-height);
-
 			/*  #endif  */
 			.title {
 				font-size: 36upx;

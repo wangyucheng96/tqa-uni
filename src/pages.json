@@ -61,6 +61,13 @@
 				"navigationBarTextStyle": "white"
 			}
 		},
+		{
+			"path": "pages/taskList/tasklist",
+			"style": {
+				"navigationBarTitleText": "任务列表",
+				"navigationBarTextStyle": "white"
+			}
+		},
 
 
 
