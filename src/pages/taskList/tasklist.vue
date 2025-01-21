@@ -1,235 +1,232 @@
 <template>
-	<view class="body-view">
-		<!-- 使用scroll-view实现tabs滑动切换 -->
-		<scroll-view class="top-menu-view" scroll-x="true" scroll-with-animation :scroll-left="scrollLeft">
-			<view class="menu-topic-view" v-for="(item,index) in tabs" :id="'tabNum'+item.id" :key="index" @click="swichMenu(index)">
-				<view :class="currentTab==index ? 'menu-topic-act' : 'menu-topic'">
-					<text class="menu-topic-text">{{item.name}}</text>
-					<view class="menu-topic-bottom">
-						<view class="menu-topic-bottom-color"></view>
-					</view>
-				</view>
-			</view>
-		</scroll-view>
-		<!-- 内容 -->
-		<swiper class="swiper-box-list" :current="currentTab" @change="swiperChange">
-			<swiper-item class="swiper-topic-list" v-for="item in swiperDateList" :key="item.id">
-				<view class="swiper-item">
-					{{item.content}}
-				</view>
-			</swiper-item>
-		</swiper>
-	</view>
+  <view class="container">
+    <view class="header">
+      <input type="text" v-model="searchQuery" placeholder="搜索" />
+      <button class="tech-button"  @click="searchTasks">搜索</button>
+    </view>
+	<view class="model-title">
+	  <text>型号列表</text>
+	  </view>
+    <view class="model-list">
+      <view class="model-item" v-for="(item, index) in modelList" :key="index">
+        <text @click="selectModel(item.product_code)">{{ item.product_code }}</text>
+      </view>
+    </view>
+    <scroll-view class="task-list" scroll-y="true">
+      <view class="task-item" v-for="(task, index) in filteredTasks" :key="index">
+        <view class="task-left">
+          <text class="task-product-code">{{ task.product_code }}</text>
+          <text class="task-part">{{ task.part }}</text>
+        </view>
+        <text class="task-id">{{ task.task_id }}</text>
+        <text class="task-status">{{ task.task_status }}</text>
+      </view>
+    </scroll-view>
+    <view class="pagination">
+      <button class="tech-button" @click="prevPage">上一页</button>
+      <text>{{ currentPage }}/{{ totalPages }}</text>
+      <button class="tech-button" @click="nextPage">下一页</button>
+    </view>
+    <view class="footer">
+      <button class="tech-button">首页</button>
+      <button class="tech-button">任务执行</button>
+      <button class="tech-button">数据导入</button>
+      <button class="tech-button">数据导出</button>
+    </view>
+  </view>
 </template>
 
 <script>
 import DB from "@/utils/sqlite/sqlite.js";
-	export default {
-		data() {
-			return {
-				scrollLeft:0,
-				// tabs: [{
-				// 		id: 1,
-				// 		name: '选项卡一'
-				// 	},
-				// 	{
-				// 		id: 2,
-				// 		name: '选项卡二'
-				// 	},
-				// 	{
-				// 		id: 3,
-				// 		name: '选项卡三'
-				// 	},
-				// 	{
-				// 		id: 4,
-				// 		name: '选项卡四'
-				// 	},
-				// 	{
-				// 		id: 5,
-				// 		name: '选项卡五'
-				// 	},
-				// 	{
-				// 		id: 6,
-				// 		name: '选项卡六'
-				// 	},
-				// 	{
-				// 		id: 7,
-				// 		name: '选项卡七'
-				// 	},
-				// ],
-// 				tabs:[
-//     {
-//         "id": 1,
-//         "name": "KZ-1AB02-Y33-推进控制舱段"
-//     },
-//     {
-//         "id": 2,
-//         "name": "KZ-1AB02-Y33-推进控制舱段"
-//     },
-//     {
-//         "id": 3,
-//         "name": "KZ-1AB02-Y34-推进控制舱段"
-//     },
-//     {
-//         "id": 4,
-//         "name": "KZ-11-Y35-推进控制舱段"
-//     }
-// ],
-				tabs:[{}],
-				currentTab: 0,
-				tabCurrent: 'tabNum1',
-				// Tab切换内容
-				swiperDateList: [{
-						id: 1,
-						content: '选项卡1页面'
-					},
-					{
-						id: 2,
-						content: '选项卡2页面'
-					},
-					{
-						id: 3,
-						content: '选项卡3页面'
-					},
-					{
-						id: 4,
-						content: '选项卡4页面'
-					},
-					{
-						id: 5,
-						content: '选项卡5页面'
-					},
-					{
-						id: 6,
-						content: '选项卡6页面'
-					},
-					{
-						id: 7,
-						content: '选项卡7页面'
-					},
-				],
-			}
-		},
-		onLoad() {
-			const dbTablesql = "task";
-			//const lname = "'projectname'";
-			DB.selectTableData(dbTablesql).then((res) => {
-			  console.log('res',res);	
-					  // 处理数据
-			  const result = res.map((item, index) => ({
-					id: index + 1, // 使用 task_id 作为 id
-					name: `${item.product_code}-${item.product_name}-${item.part_code}` // 拼接 product_code, product_name, part_code
-			   }));			
-			   console.log(result);
-			   this.tabs = result;
-			  }).catch((err) => {
-			  console.error("查询task失败", err);
-			  this.$mHelper.toast("查询task失败");
-			  this.btnLoading = false;
-			});
-			
 
-		},
-		methods: {
-			swichMenu(id) {
-				this.currentTab = id
-				console.log(11,id)
-				//this.tabCurrent = 'tabNum'+ id
-				
-				// 滑动swiper后，每个选项距离其父元素最左侧的距离
-				this.scrollLeft = 0;
-				for (let i = 0; i < id; i++) {
-					this.scrollLeft += 60
-					console.log(this.scrollLeft ,60,id)
-				};
-			},
-			swiperChange(e) {
-				console.log(22,e.detail.current)
-				let index = e.detail.current
-				this.swichMenu(index)
-				
-			}
-		}
-	}
+export default {
+  data() {
+    return {
+	  searchQuery: '', // 搜索框绑定的值
+	  filteredTasks: [], // 用于存储搜索结果
+      modelList: [{}],
+	  selectedModel: "全部",
+      tasks: [{}],
+      currentPage: 1,
+      totalPages: 1
+    };
+  },
+    onLoad() {
+    		const dbTablesql = "task";
+    		//const lname = "'projectname'";
+    		DB.selectTableData(dbTablesql).then((res) => {
+    		console.log('res',res);	
+    	
+    		const result2 = res.map((item, index) => ({
+    			id: index + 1, // 使用 task_id 作为 id
+    			task_id: item.task_id,
+  			    product_code: item.product_code,
+    			product_name: item.product_name,// 拼接 product_code, product_name, part_code
+				part: item.part_name,
+    			task_code: item.task_code,
+    			task_name: item.task_name,
+    			task_status: item.task_status,
+    			task_result:  item.task_result
+    		}));
+			const result = res.map((item,index) => ({
+				id: index + 1, // 使用 task_id 作为 id
+				product_code: item.product_code
+			}));
+    		this.tasks = result2;
+			result.push({ id: result.length + 1, product_code: "全部" });
+			this.modelList = result;
+    		}).catch((err) => {
+    		console.error("查询task失败", err);
+    		this.$mHelper.toast("查询task失败");
+    		this.btnLoading = false;
+    	});
+    },
+	computed: {
+	  filteredTasks() {
+	    // 根据选中的型号筛选任务列表
+	    if (this.selectedModel === "全部") {
+	      return this.tasks; // 选择“全部”时显示所有任务
+	    } else {
+	      return this.tasks.filter(task => task.product_code === this.selectedModel);
+	    }
+	  },
+	},
+  methods: {
+	selectModel(model) {
+	      this.selectedModel = model; // 更新选中的型号
+	    },
+    prevPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+      }
+    },
+    nextPage() {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+      }
+    },
+	searchTasks() {
+	      // 按照 task_id 搜索
+	      const query = this.searchQuery.trim();
+	      if (query) {
+	        this.filteredTasks = this.tasks.filter(task => 
+	          task.task_id.toLowerCase().includes(query.toLowerCase())
+	        );
+	      } else {
+	        this.filteredTasks = []; // 清空搜索结果
+	      }
+	    }
+  }
+};
 </script>
 
 <style scoped lang="scss">
-	.body-view {
-		width: 100%;
-		overflow: hidden;
-	}
+.container {
+  padding: 10px;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px; /* 添加内边距 */
+}
+.model-list {
+  display: flex;
+  flex-direction: row; /* 子元素水平排列 */
+  flex-wrap: nowrap; /* 确保子元素不会换行 */
+  margin-top: 10px;
+  overflow-x: auto; /* 如果内容超出容器宽度，允许滚动 */
+}
+.model-title {
+  font-size: 16px; /* 标题字号 */
+  font-weight: bold; /* 标题加粗 */
+  text-align: center; /* 文本居中对齐 */
+  margin-bottom: 10px; /* 标题与下方内容的间距 */
+}
+.model-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 5px; /* 添加右侧间距，避免元素紧挨在一起 */
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f0f0f0;
+  font-size: 10px; /* 将字号改小 */
+  white-space: nowrap; /* 防止内容换行 */
+}
+.task-list {
+  margin-top: 10px;
+  height: 300px;
+}
+.task-item {
+  display: flex; /* 使用 Flexbox 布局 */
+  align-items: flex-start; /* 对齐方式：从顶部开始 */
+  justify-content: space-between; /* 子元素平均分布在两端 */
+  padding: 20rpx; /* 调整内边距 */
+  border-bottom: 1px solid #eee; /* 添加分割线 */
+}
 
-	.top-menu-view {
-		display: flex;
-		position: fixed;
-		z-index:100;
-		//top: 84rpx;
-		/* #ifdef H5 */
-		top: 84rpx;
-		/* #endif */
-		/* #ifndef H5 */
-		top: 0rpx;
-		/* #endif */
-		left: 0;
-		white-space: nowrap;
-		width: 100%;
-		background-color: #fceeee;
-		height: 86rpx;
-		line-height: 86rpx;
-		border-top: 1rpx solid #d8dbe6;
+.task-left {
+  display: flex;
+  flex-direction: column; /* 垂直排列子元素 */
+  justify-content: flex-start; /* 从顶部开始对齐 */
+  width: 50%; /* 占据一半宽度，可根据需要调整 */
+}
 
-		.menu-topic-view {
-			display: inline-block;
-			white-space: nowrap;
-			height: 86rpx;
-			position: relative;
+.task-product-code {
+  font-size: 32rpx; /* 最大字号 */
+  font-weight: bold; /* 加粗显示 */
+}
 
-			.menu-topic-text {
-				font-size: 30rpx;
-				color: #303133;
-				padding: 10rpx 40rpx;
-				font-weight: 500;
-			}
+.task-part {
+  font-size: 28rpx; /* 中等字号 */
+}
 
-			.menu-topic-bottom {
-				position: absolute;
-				bottom: 0;
-				width: 100%;
+.task-id {
+  font-size: 3rpx; /* 稍小字号 */
+  color: #888; /* 淡色显示 */
+  margin-left: auto; /* 推到右侧 */
+}
 
-				.menu-topic-bottom-color {
-					width: 40rpx;
-					height: 4rpx;
-				}
-			}
+.task-status {
+  font-size: 24rpx; /* 最小字号 */
+  color: #555; /* 中等颜色 */
+  margin-left: auto; /* 推到右侧 */
+}
+.pagination {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.footer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-around;
+}
+/* 基础按钮样式 */
+.tech-button {
+  padding: 4px 8px; /* 减小按钮内边距，使按钮看起来更小 */
+  font-size: 15px; /* 减小字体大小 */
+  border: none;
+  outline: none;
+  cursor: pointer;
+  color: white;
+  background-image: linear-gradient(to right, #1078fe, #1078ff); /* 蓝色渐变背景 */  border-radius: 5px; /* 圆角效果 */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* 阴影效果 */
+  transition: transform 0.3s ease, background-image 0.3s ease; /* 动画过渡效果 */
+}
 
-			.menu-topic-act .menu-topic-bottom {
-				display: flex;
-				justify-content: center;
-			}
-			.menu-topic-act .menu-topic-text{
-				color:#ff0000;
-			}
-			
+/* 按钮悬停效果 */
+.tech-button:hover {
+  transform: scale(1.05); /* 按钮放大效果 */
+  background-image: linear-gradient(to left, #3f51b5, #5c6773); /* 改变渐变方向 */
+}
 
-			.menu-topic-act .menu-topic-bottom-color {
-				background: #ff0000;
-			}
-		}
-	}
-
-	.swiper-box-list {
-		width: 95%;
-		margin: 100rpx auto 30rpx;
-		padding:20rpx 40rpx;
-		flex:1;
-		background-color: #FFFFFF;
-		height: calc(100vh - 251rpx);
-		.swiper-topic-list {
-		     width: 100%;
-		 }
-	}
-	/* 隐藏滚动条，但依旧具备可以滚动的功能 */
-	.uni-scroll-view::-webkit-scrollbar {
-		display: none
-	}
+/* 按钮点击效果 */
+.tech-button:active {
+  transform: scale(0.95); /* 按钮缩小效果 */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); /* 减小阴影效果 */
+}
 </style>
