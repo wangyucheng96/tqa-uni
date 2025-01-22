@@ -28,10 +28,15 @@
       <button class="tech-button" @click="nextPage">下一页</button>
     </view>
     <view class="footer">
-      <button class="tech-button">首页</button>
-      <button class="tech-button">任务执行</button>
-      <button class="tech-button">数据导入</button>
-      <button class="tech-button">数据导出</button>
+	  <navigator class="hyperlink" :url="'/pages/dataImport/index'" hover-class="none">
+			<button class="tech-button">数据导入</button>
+	  </navigator>
+	  <navigator class="hyperlink" :url="'/pages/taskExecution/index'" hover-class="none">
+			<button class="tech-button">任务执行</button>
+	  </navigator>
+	  <navigator class="hyperlink" :url="'/pages/dataSynchronization/index'" hover-class="none">
+			<button class="tech-button">数据同步</button>
+	  </navigator>
     </view>
   </view>
 </template>
@@ -229,4 +234,8 @@ export default {
   transform: scale(0.95); /* 按钮缩小效果 */
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); /* 减小阴影效果 */
 }
+.hyperlink {
+	  color: #007aff; /* 超链接颜色 */
+	  text-decoration: underline; /* 添加下划线 */
+	}
 </style>
