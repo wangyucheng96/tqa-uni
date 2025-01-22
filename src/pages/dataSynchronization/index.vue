@@ -29,6 +29,7 @@
 </template>
 
 <script>
+import DB from "@/utils/sqlite/sqlite.js";
 import piaoyiProgressBar from '@/uni_modules/piaoyi-progress-bar/components/piaoyi-progress-bar/piaoyi-progress-bar.vue';
 
 export default {
