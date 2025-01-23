@@ -55,7 +55,7 @@
 			}
 		},
 		{
-			"path": "pages/taskExecution/detail",
+			"path": "pages/taskExecution/detail_z",
 			"style": {
 				"navigationBarTitleText": "任务详情",
 				"navigationBarTextStyle": "white"

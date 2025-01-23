@@ -60,7 +60,7 @@ export default {
     		const dbTablesql = "task";
     		//const lname = "'projectname'";
     		DB.selectTableData(dbTablesql).then((res) => {
-    		console.log('res',res);	
+    		//console.log('res',res);	
     	
     		const result2 = res.map((item, index) => ({
     			id: index + 1, // 使用 task_id 作为 id
@@ -78,8 +78,12 @@ export default {
 				product_code: item.product_code
 			}));
     		this.tasks = result2;
+			this.filteredTasks = result2;
+			console.log("tasks: ",this.tasks);
+			console.log("filteredTasks: ",this.filteredTasks);
 			result.push({ id: result.length + 1, product_code: "全部" });
 			this.modelList = result;
+			console.log("modelList: ",this.modelList);
     		}).catch((err) => {
     		console.error("查询task失败", err);
     		this.$mHelper.toast("查询task失败");
@@ -87,6 +91,7 @@ export default {
     	});
     },
 	computed: {
+	/*
 	  filteredTasks() {
 	    // 根据选中的型号筛选任务列表
 	    if (this.selectedModel === "全部") {
@@ -94,11 +99,16 @@ export default {
 	    } else {
 	      return this.tasks.filter(task => task.product_code === this.selectedModel);
 	    }
-	  },
+	  },*/
 	},
   methods: {
 	selectModel(model) {
 	      this.selectedModel = model; // 更新选中的型号
+		  if (this.selectedModel === "全部") {
+		    this.filteredTasks = this.tasks; // 选择“全部”时显示所有任务
+		  } else {
+		     this.filteredTasks = this.tasks.filter(task => task.product_code === this.selectedModel);
+		  }
 	    },
     prevPage() {
       if (this.currentPage > 1) {

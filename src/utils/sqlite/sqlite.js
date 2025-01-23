@@ -327,7 +327,8 @@ const initializeUserTable = () => {
 const initializeTaskTable = () => {
 	  // 创建 task 表
 	  const dbTable = "task";
-	  const data = "'task_id' TEXT PRIMARY KEY, 'product_code' TEXT, 'product_name' TEXT, 'part_code' TEXT, 'part_name' TEXT, 'task_code' TEXT, 'task_name' TEXT, 'task_status' TEXT,  'task_result' TEXT, 'create_time' DATETIME, 'create_man' TEXT, 'modify_time' DATETIME, 'modify_man' TEXT, 'remarks' TEXT";
+	  //const data = "'task_id' TEXT PRIMARY KEY, 'product_code' TEXT, 'product_name' TEXT, 'part_code' TEXT, 'part_name' TEXT, 'task_code' TEXT, 'task_name' TEXT, 'task_status' TEXT,  'task_result' TEXT, 'create_time' DATETIME, 'create_man' TEXT, 'modify_time' DATETIME, 'modify_man' TEXT, 'remarks' TEXT";
+	  const data = "'task_id' TEXT PRIMARY KEY, 'parent_id' TEXT, 'product_code' TEXT, 'product_name' TEXT, 'part_code' TEXT, 'part_name' TEXT, 'task_code' TEXT, 'task_name' TEXT, 'task_status' TEXT,  'task_result' TEXT, 'create_time' DATETIME, 'create_man' TEXT, 'modify_time' DATETIME, 'modify_man' TEXT, 'remarks' TEXT, 'level' INTEGER";
 	  createTable(dbTable, data).then((res) => {
 	    console.log('task表创建成功', res);
 	  }).catch((err) => {
@@ -338,7 +339,9 @@ const initializeTaskTable = () => {
 const initializeTaskItemTable = () => {
 		  // 创建 ITEM 表
 		  const dbTable = "task_item";
-		  const data = "'item_id' INTEGER PRIMARY KEY AUTOINCREMENT, 'task_id' TEXT, 'item_code' TEXT, 'item_name' TEXT, 'item_status' TEXT, 'number' TEXT, 'content' TEXT, 'location' TEXT,  'require' TEXT, 'lockstytle' TEXT, 'type' TEXT, 'target_data' TEXT, 'target_up' TEXT, 'target_down' TEXT, 'result_data' TEXT, 'picture' TEXT, 'modify_time' DATETIME, 'modify_man' TEXT, 'remarks' TEXT";
+		  const data = "'item_id' INTEGER PRIMARY KEY AUTOINCREMENT, 'task_id' TEXT, 'parent_id' TEXT, 'item_code' TEXT, 'item_name' TEXT, 'item_status' TEXT, 'number' TEXT, 'content_unit' TEXT, 'content_product' TEXT, 'content_name' TEXT, 'location' TEXT, 'require' TEXT, 'lockstytle' TEXT, 'type' TEXT, 'target_data' TEXT, 'target_up' TEXT, 'target_down' TEXT, 'result_data' TEXT, 'picture' TEXT, 'modify_time' DATETIME, 'modify_man' TEXT, 'remarks' TEXT, 'level' INTEGER";
+
+		  //const data = "'item_id' INTEGER PRIMARY KEY AUTOINCREMENT, 'task_id' TEXT, 'item_code' TEXT, 'item_name' TEXT, 'item_status' TEXT, 'number' TEXT, 'content' TEXT, 'location' TEXT,  'require' TEXT, 'lockstytle' TEXT, 'type' TEXT, 'target_data' TEXT, 'target_up' TEXT, 'target_down' TEXT, 'result_data' TEXT, 'picture' TEXT, 'modify_time' DATETIME, 'modify_man' TEXT, 'remarks' TEXT";
 		  createTable(dbTable, data).then((res) => {
 		    console.log('task_item表创建成功', res);
 		  }).catch((err) => {

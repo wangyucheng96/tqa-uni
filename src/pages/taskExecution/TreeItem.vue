@@ -11,7 +11,7 @@
 					<image class="icon" :class="{ [`level-${index}`]: true }"
 						:src="getIconSrc(item.level, item.completed)"></image>
 				</view>
-				<text class="item-label">{{ item.label }}</text>
+				<text class="item-label">{{ item.content_name }}</text>
 				<view v-if="item.children" class="status-label">
 					<view v-if="checkChildrenStatus(item.children).completed">
 						<text class="completed-label">已完成</text>
@@ -38,12 +38,18 @@ export default {
 		};
 	},
 	methods: {
+		
 		toggleItem(item) {
-			if (item.children) {
-				this.$set(item, 'expanded', !item.expanded);
-			} else {
+			if(item.level === 1){
 				this.$emit('select', item);
 			}
+			/*
+			if (item.children) {
+				this.$set(item, 'expanded', !item.expanded);
+				
+			} else {
+				this.$emit('select', item);
+			}*/
 		},
 		onSelect(item) {
 			this.$emit('select', item);
