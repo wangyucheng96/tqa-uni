@@ -31,7 +31,7 @@
 
 <script>
 import piaoyiProgressBar from '@/uni_modules/piaoyi-progress-bar/components/piaoyi-progress-bar/piaoyi-progress-bar.vue';
-import * as XLSX from 'xlsx';;
+import * as XLSX from 'xlsx';
 import DB from "@/utils/sqlite/sqlite.js";
 export default {
 	components: {
@@ -186,7 +186,6 @@ export default {
 										  this.$mHelper.toast("查询task_item失败");
 										  this.btnLoading = false;
 										});
-										
 								    };
 								    fileReader.onerror = (error) => {
 								      console.error('读取文件失败:', error);
