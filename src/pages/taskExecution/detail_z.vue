@@ -173,15 +173,51 @@
 	        	            	<!-- Attachment Upload -->
 	        	            	<uni-forms-item label="附件：" name="attachments">
 	        	            		<view class="upload-box">
-	        	            			<uni-file-picker limit="9" title="最多选择9张图片" file-mediatype="image" return-type="object"
-	        	            				@select="handleFileSelect" @success="handleFileSuccess"
-	        	            				v-model="formData.attachments"></uni-file-picker>
+	        	            			<uni-file-picker 
+										mode="grid"
+										limit="9" 
+										title="最多选择9张图片" 
+										file-mediatype="image" 
+										return-type="array"
+										multiple="true"
+	        	            			@select="handleFileSelect" 
+										@success="handleFileSuccess"
+	        	            			v-model="formData.attachments">
+										</uni-file-picker>
 	        	            		</view>
 	        	            	</uni-forms-item>
+								
+								<uni-forms-item label="视频：" name="videos">
+									<view class="upload-box">
+										<uni-file-picker 
+										mode="grid"
+										limit="9" 
+										title="最多选择9段视频" 
+										file-mediatype="video" 
+										return-type="array"
+										@select="handleVideoSelect" 
+										@success="handleFileSuccess"
+										v-model="formData.videos">
+										</uni-file-picker>
+									</view>
+								</uni-forms-item>
+								
+<!-- 								<uni-forms-item label="视频：" name="videos">
+								    <view class="upload-box">
+								      <button @click="chooseImage">选择图片</button>
+								      <button @click="chooseVideo">选择视频</button>
+								    </view>
+								  </uni-forms-item> -->
 	        	            	<!-- Remark Section -->
 	        	            	<uni-forms-item label="备注：" name="remark">
 	        	            		<textarea class="remark-input" v-model="formData.remark" placeholder="请输入"></textarea>
 	        	            	</uni-forms-item>
+								 <view>
+								    <button @click="addWatermarkAndSave">添加水印</button>
+								    <view style="position: absolute; top: -9999px;">
+								          <canvas :style= "canvasStyle" canvas-id="watermarkCanvas"></canvas>
+								        </view>
+								  </view>
 	        	            
 	        	            	<!-- Submit Button -->
 	        	            	<button class="submit-button" @click="submitForm" style="height: 40px;line-height: 40px;">完成</button>
@@ -218,6 +254,7 @@ import LiuStepBar from '@/pages/taskExecution/LiuStepBar.vue';
 					qualifiedQuantity: 0,
 					unqualifiedQuantity: 0,
 					attachments: [],
+					videos: [],
 					remark: ''
 				},
 				sex: [{
@@ -274,7 +311,12 @@ import LiuStepBar from '@/pages/taskExecution/LiuStepBar.vue';
 							errorMessage: '备注不能超过200个字符'
 						}]
 					}
-				}
+				}, 
+				imagePath: '/storage/emulated/0/DCIM/Camera/IMG_20250206_184544.jpg', // 替换为实际的图片路径
+				watermarkedImagePath: '', // 带水印的图片路径
+				canvasWidth: 0, // Canvas 宽度
+				canvasHeight: 0, // Canvas 高度
+				canvasStyle: '' // Canvas 样式
 			};
 			
 		},
@@ -359,6 +401,12 @@ import LiuStepBar from '@/pages/taskExecution/LiuStepBar.vue';
 				});
 			},
 			handleFileSelect(event) {
+				this.formData.attachments = event.tempFiles;
+				console.log('选择的文件:', event.tempFiles);
+				// 可以在这里处理选择的文件
+			},
+			handleVideoSelect(event) {
+				this.formData.videos = event.tempFiles;
 				console.log('选择的文件:', event.tempFiles);
 				// 可以在这里处理选择的文件
 			},
@@ -378,6 +426,147 @@ import LiuStepBar from '@/pages/taskExecution/LiuStepBar.vue';
 					this.active = 0
 				}
 			},
+    async addWatermarkAndSave() {
+      try {
+        // 1. 保存指定路径下的文件到沙盒路径
+		//"file:///storage/emulated/0/DCIM/Camera/IMG_20250206_184544.jpg
+		//const originalPath = '/storage/emulated/0/DCIM/Camera/IMG_20250206_184544.jpg';
+		//const originalPath = '/storage/emulated/0/Pictures/WeiXin/mmexport1739248283812.jpg';
+		//const originalPath = ' _doc/uniapp_temp_1739177084258/canvas/17391770885110.png';
+	    // 1. 获取图片信息
+		const imageInfo = await this.getImageInfo(this.imagePath);
+		
+		// 2. 设置 Canvas 尺寸
+		this.canvasWidth = imageInfo.width;
+		this.canvasHeight = imageInfo.height;
+		console.log("imageInfo.width",imageInfo.width);
+		console.log("imageInfo.height",imageInfo.height);
+		this.canvasStyle = `width: ${this.canvasWidth/5}px; height: ${this.canvasHeight/5}px;`;
+		console.log("this.canvasStyle",this.canvasStyle);
+		
+        const saveRes = await this.saveFileToSandbox(this.imagePath);
+        console.log('文件保存成功，沙盒路径:', saveRes.savedFilePath);
+
+        // 2. 添加水印
+        const watermarkedPath = await this.addWatermark(saveRes.savedFilePath);
+        console.log('带水印的图片路径:', watermarkedPath);
+
+        // 3. 保存带水印的图片到指定目录
+        const savePath = '/storage/emulated/0/Documents/'; // 替换为实际的保存路径
+        await this.saveFileToDirectory(watermarkedPath, savePath);
+        console.log('带水印的图片已保存到:', savePath);
+      } catch (err) {
+        console.error('处理图片失败:', err);
+      }
+    },
+	async getImageInfo(filePath) {
+	      return new Promise((resolve, reject) => {
+	        uni.getImageInfo({
+	          src: filePath,
+	          success: (res) => {
+	            if (res.width === 0 || res.height === 0) {
+	              reject(new Error('图片宽度或高度为 0'));
+	              return;
+	            }
+	            resolve(res);
+	          },
+	          fail: (err) => {
+	            reject(err);
+	          }
+	        });
+	      });
+	    },
+    saveFileToSandbox(filePath) {
+      return new Promise((resolve, reject) => {
+        uni.saveFile({
+          tempFilePath: filePath,
+          success: (res) => {
+            resolve(res);
+          },
+          fail: (err) => {
+            reject(err);
+          }
+        });
+      });
+    },
+async addWatermark(imagePath) {
+      return new Promise((resolve, reject) => {
+        const ctx = uni.createCanvasContext('watermarkCanvas', this);
+		console.log("ctx",ctx);
+        ctx.drawImage(imagePath, 0, 0, this.canvasWidth/5, this.canvasHeight/5);
+
+        // 设置水印样式
+        ctx.setFontSize(20);
+        ctx.setFillStyle('rgba(0,255,255, 0.6)');
+        ctx.fillText('uniapp', 10, 30);
+
+        ctx.draw(false, () => {
+          uni.canvasToTempFilePath({
+            canvasId: 'watermarkCanvas',
+            success: (res) => {
+              resolve(res.tempFilePath);
+            },
+            fail: (err) => {
+              reject(err);
+            }
+          });
+        });
+      });
+    },
+	    async saveFileToDirectory(tempFilePath, savePath) {
+	      return new Promise((resolve, reject) => {
+	        uni.saveFile({
+	          tempFilePath: tempFilePath,
+	          success: (res) => {
+	            const fs = plus.io;
+	            const targetPath = savePath + 'watermarked.jpg';
+	            fs.copyFile(res.savedFilePath, targetPath, () => {
+	              resolve(targetPath);
+	            }, (err) => {
+	              reject(err);
+	            });
+	          },
+	          fail: (err) => {
+	            reject(err);
+	          }
+	        });
+	      });
+	    }
+	/*
+    saveFileToDirectory(tempFilePath, savePath) {
+      return new Promise((resolve, reject) => {
+        uni.saveFile({
+          tempFilePath: tempFilePath,
+          success: (res) => {
+            const fs = plus.io;
+            fs.requestFileSystem(fs.PUBLIC_DOCUMENTS, (fs) => {
+			console.log("fs.PUBLIC_DOCUMENTS",fs.PUBLIC_DOCUMENTS);
+            const targetPath = fs.root.toURL() + savePath + 'watermarked.jpg';
+			  //const targetPath = savePath + 'watermarked.jpg';
+			  console.log("targetPath",targetPath);
+              fs.root.getFile(targetPath, { create: true }, (fileEntry) => {
+                fileEntry.createWriter((fileWriter) => {
+                  fileWriter.onwriteend = () => {
+                    resolve(targetPath);
+                  };
+                  fileWriter.onerror = (e) => {
+                    reject(e);
+                  };
+                  fileWriter.write(res.savedFilePath);
+                });
+              });
+            });
+          },
+          fail: (err) => {
+            reject(err);
+          }
+        });
+      });
+    }
+		*/
+				  
+						
+				
 			// clickStep(stepIndex) {
 			// 	console.log(`点击了第 ${stepIndex + 1} 步（liu-step-bar）`);
 			// 	this.active = stepIndex; // 更新当前激活的步骤
@@ -388,7 +577,23 @@ import LiuStepBar from '@/pages/taskExecution/LiuStepBar.vue';
 			// },
 		},
 		
-		
+		 // chooseImage() {
+		 //      uni.chooseImage({
+		 //        count: 9, // 最多选择9张图片
+		 //        success: (res) => {
+		 //          this.formData.attachments = this.formData.attachments.concat(res.tempFiles);
+		 //        }
+		 //      });
+		 //    },
+		 //    // 选择视频
+		 //    chooseVideo() {
+		 //      uni.chooseVideo({
+		 //        count: 1, // 最多选择1个视频
+		 //        success: (res) => {
+		 //          this.formData.attachments.push(res.tempFiles[0]);
+		 //        }
+		 //      });
+		 //    }	
 	};
 </script>
 	

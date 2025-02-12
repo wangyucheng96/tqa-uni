@@ -16,7 +16,9 @@
       <view class="task-item" v-for="(task, index) in filteredTasks" :key="index">
         <view class="task-left">
           <text class="task-product-code">{{ task.product_code }}</text>
+		  <navigator class="hyperlink" :url="'/pages/taskExecution/detail_z'" hover-class="none">
           <text class="task-part">{{ task.part }}</text>
+		  </navigator>
         </view>
         <text class="task-id">{{ task.task_id }}</text>
         <text class="task-status">{{ task.task_status }}</text>
@@ -102,6 +104,19 @@ export default {
 	  },*/
 	},
   methods: {
+	  onSelect(item) {
+	  	console.log('Selected:', item)
+	  	this.navTo("/pages/taskExecution/detail_z");
+	  	// uni.showToast({
+	  	// 	title: `已选择: ${item.label}`,
+	  	// 	icon: 'none'
+	  	// })
+	  },
+	  navTo(route) {
+	  	this.$mRouter.push({
+	  		route
+	  	});
+	  },
 	selectModel(model) {
 	      this.selectedModel = model; // 更新选中的型号
 		  if (this.selectedModel === "全部") {
